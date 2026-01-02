@@ -1,0 +1,150 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: #f4f6fb;
+  color: #1f2a44;
+}
+
+.container {
+  max-width: 960px;
+  margin: 48px auto;
+  padding: 0 20px 40px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  margin: 0 0 6px;
+  font-size: 2.2rem;
+}
+
+.header p {
+  margin: 0;
+  color: #4c5c7a;
+}
+
+.badge {
+  background: #2f6feb;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 18px 32px rgba(31, 42, 68, 0.1);
+  margin-bottom: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+label {
+  font-weight: 600;
+  color: #2f3a58;
+}
+
+textarea,
+input[type="text"],
+input[type="number"] {
+  border: 1px solid #d6deef;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  background: #f9fbff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  margin-top: 28px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+button,
+.button {
+  border: none;
+  background: #2f6feb;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+button:hover,
+.button:hover {
+  background: #2458c8;
+}
+
+.button.secondary {
+  background: #e7eefc;
+  color: #2f6feb;
+}
+
+.button.secondary:hover {
+  background: #d4e2fb;
+}
+
+.alert {
+  background: #fff4f4;
+  color: #b42318;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin: 12px 0;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.email-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.email-list li {
+  background: #f6f8fe;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
