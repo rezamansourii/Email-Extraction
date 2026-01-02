@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Email Extraction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div>
+          <h1>Email Extraction</h1>
+          <p>Extract email addresses from one or more URLs and export the results.</p>
+        </div>
+        <div class="badge">Basic UI</div>
+      </header>
+
+      <form method="post" class="card">
+        <div class="field">
+          <label for="urls">URLs (one per line)</label>
+          <textarea id="urls" name="urls" rows="6" placeholder="https://example.com/contact"></textarea>
+        </div>
+
+        <div class="grid">
+          <label class="checkbox">
+            <input type="checkbox" name="crawl" />
+            Enable same-domain crawl
+          </label>
+
+          <div class="field">
+            <label for="depth">Crawl depth</label>
+            <input id="depth" name="depth" type="number" min="0" value="1" />
+          </div>
+
+          <div class="field">
+            <label for="max_pages">Max pages</label>
+            <input id="max_pages" name="max_pages" type="number" min="1" value="25" />
+          </div>
+
+          <div class="field">
+            <label for="delay">Delay (seconds)</label>
+            <input id="delay" name="delay" type="number" min="0" step="0.1" value="0" />
+          </div>
+
+          <div class="field">
+            <label for="timeout">Timeout (seconds)</label>
+            <input id="timeout" name="timeout" type="number" min="1" step="1" value="15" />
+          </div>
+
+          <div class="field">
+            <label for="user_agent">User-Agent</label>
+            <input
+              id="user_agent"
+              name="user_agent"
+              type="text"
+              value="EmailExtractor/1.0 (+https://example.local)"
+            />
+          </div>
+        </div>
+
+        {% if error %}
+        <p class="alert">{{ error }}</p>
+        {% endif %}
+
+        <div class="actions">
+          <button type="submit">Extract Emails</button>
+        </div>
+      </form>
+
+      {% if result %}
+      <section class="card results">
+        <div class="results-header">
+          <div>
+            <h2>Results</h2>
+            <p>{{ result.count }} unique emails found.</p>
+          </div>
+          <div class="export">
+            <a class="button secondary" href="{{ url_for('export_excel', result_id=result_id) }}">Export Excel</a>
+            <a class="button secondary" href="{{ url_for('export_pdf', result_id=result_id) }}">Export PDF</a>
+          </div>
+        </div>
+
+        <ul class="email-list">
+          {% for email in result.emails %}
+          <li>{{ email }}</li>
+          {% else %}
+          <li>No emails found.</li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </div>
+  </body>
+</html>
