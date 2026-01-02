@@ -158,10 +158,13 @@ def crawl_and_extract(start_urls: Iterable[str], cfg: CrawlConfig, do_crawl: boo
     visited: Set[str] = set()
 
     q = deque()
+    normalized_start_urls = []
     for u in start_urls:
-        q.append((u, 0))
+        normalized, _frag = urldefrag(u)
+        normalized_start_urls.append(normalized)
+        q.append((normalized, 0))
 
-    start_domains = {urlparse(u).netloc.lower() for u in start_urls}
+    start_domains = {urlparse(u).netloc.lower() for u in normalized_start_urls}
 
     while q and len(visited) < cfg.max_pages:
         url, depth = q.popleft()
