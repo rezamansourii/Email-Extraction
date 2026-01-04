@@ -21,7 +21,9 @@ from typing import Iterable, Optional, Set, Tuple
 from urllib.parse import urldefrag, urljoin, urlparse
 
 import requests
-from bs4 import BeautifulSoup
+from requests import Session
+from requests.exceptions import ProxyError
+from bs4 import BeautifulSoup, Comment
 
 # Standard email pattern (kept conservative to reduce false positives)
 EMAIL_RE = re.compile(
@@ -87,19 +89,37 @@ def clean_emails(emails: Iterable[str]) -> Set[str]:
     return out
 
 
-def fetch(url: str, cfg: CrawlConfig) -> Optional[str]:
+def _get_response(session: Session, url: str, cfg: CrawlConfig) -> requests.Response:
     headers = {"User-Agent": cfg.user_agent}
-    try:
-        r = requests.get(url, headers=headers, timeout=cfg.timeout_seconds)
-        r.raise_for_status()
-        ctype = r.headers.get("Content-Type", "")
-        # Skip obvious non-HTML responses
-        if "text/html" not in ctype and "application/xhtml+xml" not in ctype and not r.text.lstrip().startswith("<"):
+    return session.get(url, headers=headers, timeout=cfg.timeout_seconds)
+
+
+def fetch(url: str, cfg: CrawlConfig) -> Optional[str]:
+    with requests.Session() as session:
+        try:
+            r = _get_response(session, url, cfg)
+        except ProxyError:
+            session.trust_env = False
+            try:
+                r = _get_response(session, url, cfg)
+            except requests.RequestException as ex:
+                print(f"[warn] fetch failed: {url} ({ex})", file=sys.stderr)
+                return None
+        except requests.RequestException as ex:
+            print(f"[warn] fetch failed: {url} ({ex})", file=sys.stderr)
             return None
-        return r.text
+
+    try:
+        r.raise_for_status()
     except requests.RequestException as ex:
         print(f"[warn] fetch failed: {url} ({ex})", file=sys.stderr)
         return None
+
+    ctype = r.headers.get("Content-Type", "")
+    # Skip obvious non-HTML responses
+    if "text/html" not in ctype and "application/xhtml+xml" not in ctype and not r.text.lstrip().startswith("<"):
+        return None
+    return r.text
 
 
 def extract_emails_from_html(html: str) -> Set[str]:
@@ -111,12 +131,18 @@ def extract_emails_from_html(html: str) -> Set[str]:
     # Include some attribute content where emails often hide
     attrs_text_parts = []
     for tag in soup.find_all(True):
-        for attr in ("href", "data-email", "data-mail", "content", "value"):
+        for attr in ("href", "data-email", "data-mail", "content", "value", "data-user", "data-domain"):
             v = tag.get(attr)
             if isinstance(v, str) and v:
                 attrs_text_parts.append(v)
+        data_user = tag.get("data-user")
+        data_domain = tag.get("data-domain")
+        if isinstance(data_user, str) and isinstance(data_domain, str) and data_user and data_domain:
+            attrs_text_parts.append(f"{data_user}@{data_domain}")
 
-    combined = " ".join([text] + attrs_text_parts)
+    comment_text = " ".join(comment.strip() for comment in soup.find_all(string=lambda node: isinstance(node, Comment)))
+
+    combined = " ".join([text, comment_text] + attrs_text_parts)
     normalized = normalize_text_for_emails(combined)
 
     found = set(EMAIL_RE.findall(normalized))
